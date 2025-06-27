@@ -85,7 +85,9 @@ export function AppSidebar() {
                   <Home className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Next Template</span>
+                  <span className="truncate font-semibold">
+                    {process.env.NEXT_PUBLIC_APP_NAME ?? "Next Enterprise Plus"}
+                  </span>
                   <span className="truncate text-xs">Modern App</span>
                 </div>
               </Link>

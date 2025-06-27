@@ -1,5 +1,7 @@
 # Next Enterprise Plus
 
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/tomagrab/next-enterprise-plus?utm_source=oss&utm_medium=github&utm_campaign=tomagrab%2Fnext-enterprise-plus&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+
 A modern Next.js template project designed for enterprise applications, featuring a responsive layout, authentication, and professional UI components.
 
 ## Features
