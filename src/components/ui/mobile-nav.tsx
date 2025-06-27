@@ -9,6 +9,7 @@ import {
   ScrollText,
   Zap,
   ShieldCheck,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -48,6 +49,7 @@ const navItems = [
 ];
 
 const morePages = [
+  { name: "Color Themes", href: "/color-theme", icon: Palette },
   { name: "Overflow Demo", href: "/overflow-demo", icon: ScrollText },
   { name: "Server Actions", href: "/server-actions", icon: Zap },
   { name: "Security Testing", href: "/security-testing", icon: ShieldCheck },

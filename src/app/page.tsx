@@ -317,6 +317,15 @@ export default function Home() {
               </p>
             </Link>
             <Link
+              href="/color-theme"
+              className="p-4 border rounded-lg hover:bg-muted transition-colors"
+            >
+              <h4 className="font-medium mb-2">🎨 Color Themes</h4>
+              <p className="text-sm text-muted-foreground">
+                Explore the dynamic color theme system with interactive demos.
+              </p>
+            </Link>
+            <Link
               href="/overflow-demo"
               className="p-4 border rounded-lg hover:bg-muted transition-colors"
             >

@@ -21,6 +21,7 @@ import {
   ScrollText,
   Rocket,
   KeyRound,
+  Palette,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,6 +49,11 @@ const navigationItems = [
 
 // Demo and testing items
 const demoItems = [
+  {
+    title: "Color Themes",
+    url: "/color-theme",
+    icon: Palette,
+  },
   {
     title: "Overflow Demo",
     url: "/overflow-demo",

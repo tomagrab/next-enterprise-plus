@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeProvider } from "@/components/providers/theme/theme-provider";
+import { ColorThemeProvider } from "@/components/providers/theme/color-theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -16,10 +17,12 @@ export function Providers({ children }: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      <SessionProvider>
-        {children}
-        <Toaster richColors position="top-right" />
-      </SessionProvider>
+      <ColorThemeProvider defaultTheme="blue">
+        <SessionProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </SessionProvider>
+      </ColorThemeProvider>
     </ThemeProvider>
   );
 }

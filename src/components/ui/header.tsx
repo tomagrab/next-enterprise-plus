@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeControls } from "@/components/ui/theme-controls";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { DynamicTitle } from "@/components/ui/dynamic-title";
 
@@ -13,7 +13,7 @@ export async function DesktopHeader() {
         </h1>
       </div>
       <div className="flex items-center gap-2">
-        <ThemeToggle />
+        <ThemeControls />
       </div>
     </header>
   );
@@ -29,7 +29,7 @@ export async function MobileHeader() {
         </h1>
       </div>
       <div className="flex items-center gap-2">
-        <ThemeToggle />
+        <ThemeControls />
       </div>
     </header>
   );
