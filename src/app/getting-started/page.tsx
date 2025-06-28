@@ -240,10 +240,18 @@ export default function YourPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
             <h3 className="font-medium text-green-800 dark:text-green-200 mb-2">
-              Database Integration
+              API Integration
             </h3>
             <p className="text-sm text-green-700 dark:text-green-300">
-              Add Prisma, Drizzle, or your preferred ORM for data persistence.
+              Connect to external APIs for data fetching and manipulation.{" "}
+              <a
+                href="https://github.com/tomagrab/next-enterprise-plus#api-integration"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:no-underline font-medium"
+              >
+                View architecture guide →
+              </a>
             </p>
           </div>
           <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">

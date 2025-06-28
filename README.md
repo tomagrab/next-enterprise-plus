@@ -140,6 +140,8 @@ Configuration Files:
 
 4. **Open** [http://localhost:3000](http://localhost:3000)
 
+5. **Review Architecture** - See [API Integration](#api-integration) for recommended backend architecture patterns
+
 ## Testing
 
 The template includes a comprehensive testing suite with **100% test pass rate**:
@@ -658,6 +660,169 @@ src/lib/security/
 ├── validation.ts      # Zod schema validation helpers
 └── csrf.ts           # CSRF protection implementation
 ```
+
+## API Integration {#api-integration}
+
+### Architecture Philosophy
+
+This template follows a **strict separation of concerns** architecture where the Next.js application serves exclusively as the presentation layer. The core principle is that **the Next.js app should never have direct database access**.
+
+**Next.js Responsibilities:**
+
+- Fetching data via API calls
+- Displaying data to users
+- Handling user interactions
+- Client-side state management
+- UI/UX presentation logic
+
+**API Layer Responsibilities:**
+
+- Database operations (CRUD)
+- Business logic implementation
+- Data validation and sanitization
+- Authentication and authorization
+- Rate limiting and security
+
+#### Why No Direct Database Access?
+
+**❌ We intentionally avoid ORMs like Prisma or Drizzle in the Next.js app** for the following reasons:
+
+1. **Security**: Database credentials and connection strings are isolated from the frontend layer
+2. **Separation of Concerns**: Business logic stays in the backend, presentation logic in the frontend
+3. **Scalability**: API layer can be scaled independently and serve multiple clients (web, mobile, etc.)
+4. **Technology Flexibility**: Database technology can be changed without affecting the Next.js app
+5. **Testing**: Each layer can be unit tested independently with proper mocking
+6. **Team Collaboration**: Frontend and backend teams can work independently with clear API contracts
+
+#### Recommended API Technologies
+
+**Enterprise-Grade Options:**
+
+- **ASP.NET Core Web API** - Microsoft's robust, enterprise-ready API framework
+- **Spring Boot** - Java-based enterprise framework with comprehensive features
+- **Django REST Framework** - Python framework with built-in admin and ORM
+- **Ruby on Rails API** - Convention-over-configuration with rapid development
+
+**Modern Alternatives:**
+
+- **Node.js + Express/Fastify** - JavaScript ecosystem consistency
+- **Go + Gin/Echo** - High performance and simple deployment
+- **Rust + Axum/Actix** - Memory safety and extreme performance
+- **Python + FastAPI** - Modern async framework with automatic OpenAPI docs
+
+#### Implementation Example
+
+```typescript
+// ✅ Recommended: API calls from Next.js
+// src/lib/api/users.ts
+export async function getUsers() {
+  const response = await fetch(`${process.env.API_BASE_URL}/api/users`, {
+    headers: {
+      Authorization: `Bearer ${await getAccessToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch users");
+  }
+
+  return response.json();
+}
+
+export async function createUser(userData: CreateUserRequest) {
+  const response = await fetch(`${process.env.API_BASE_URL}/api/users`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${await getAccessToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create user");
+  }
+
+  return response.json();
+}
+```
+
+```typescript
+// ❌ Avoided: Direct database access in Next.js
+// We DON'T do this in the Next.js app:
+// import { prisma } from '@/lib/prisma';
+// const users = await prisma.user.findMany();
+```
+
+**Command Line Example (curl):**
+
+```bash
+# Fetch users from your API layer
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     https://api.yourcompany.com/api/users
+
+# Create a new user
+curl -X POST \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"John Doe","email":"john@example.com"}' \
+     https://api.yourcompany.com/api/users
+```
+
+#### API Layer Example (ASP.NET Core)
+
+```csharp
+// Example API Controller (separate ASP.NET Core project)
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly IUserService _userService;
+
+    public UsersController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+    {
+        var users = await _userService.GetUsersAsync();
+        return Ok(users);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<UserDto>> CreateUser(CreateUserRequest request)
+    {
+        var user = await _userService.CreateUserAsync(request);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+    }
+}
+```
+
+#### Environment Configuration
+
+```bash
+# .env.local - Next.js environment variables
+API_BASE_URL=https://api.yourcompany.com
+API_TIMEOUT=30000
+```
+
+#### Benefits of This Architecture
+
+- **🔒 Enhanced Security**: No database credentials in frontend code
+- **🚀 Better Performance**: API layer can implement caching, connection pooling
+- **📱 Multi-Platform Support**: Same API serves web, mobile, desktop applications
+- **🧪 Improved Testing**: Clear boundaries make unit testing and integration testing easier
+- **👥 Team Scalability**: Frontend and backend teams can work independently
+- **🔄 Technology Evolution**: Replace database or API technology without frontend changes
+- **📊 Monitoring & Analytics**: Centralized API layer enables better logging and monitoring
+
+This architectural approach ensures your Next.js application remains focused on its core responsibility: delivering an exceptional user experience while maintaining clean separation from data persistence concerns.
 
 ## Testing Infrastructure
 
