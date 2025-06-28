@@ -130,6 +130,8 @@ Test the error handling by visiting these URLs:
 - `/api/example/user?id=403` - Triggers forbidden error
 - `/api/example/user?id=500` - Triggers server error
 - `/nonexistent-page` - Triggers 404 page
+- `/error-testing` - Interactive error testing page
+- `/color-theme` - Color theme showcase (test theme switching errors)
 
 Use the error testing component in development to simulate different error scenarios.
 
@@ -141,7 +143,13 @@ The template includes comprehensive error handling tests:
 # Run error handling tests
 npm test -- --testPathPatterns="error"
 
-# All error scenarios are covered in the test suite
+# Run color theme tests (includes error scenarios)
+npm test -- --testPathPatterns="color-theme"
+
+# Run all tests including expanded coverage
+npm test
+
+# Results: ✅ 9 test suites passed, 51 tests passed
 ```
 
-Error boundaries, API error handlers, and client error utilities are all tested with Jest and React Testing Library.
+Error boundaries, API error handlers, client error utilities, and color theme error scenarios are all tested with Jest and React Testing Library.

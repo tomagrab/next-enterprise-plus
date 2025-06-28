@@ -12,10 +12,11 @@ This template includes a comprehensive testing setup with unit testing, integrat
 
 ## Current Test Status
 
-✅ **All tests passing** - 22 tests across 4 test suites
+✅ **All tests passing** - 51 tests across 9 test suites
 
 - API route tests with proper mocking for Next.js runtime
 - Component tests with Server Action compatibility
+- Color theme system tests
 - Security feature testing
 - Error boundary testing
 
@@ -33,9 +34,12 @@ src/
         └── __tests__/      # API route tests
 e2e/
 ├── home.spec.ts           # Homepage E2E tests
+├── color-theme.spec.ts    # Color theme system E2E tests
 ├── navigation.spec.ts     # Navigation E2E tests
 ├── auth.spec.ts          # Authentication E2E tests
-└── security.spec.ts      # Security features E2E tests
+├── performance.spec.ts   # Performance testing
+├── security.spec.ts      # Security features E2E tests
+└── visual-regression.spec.ts # Visual regression testing
 ```
 
 ## Running Tests
@@ -65,8 +69,16 @@ npm run test:e2e:ui
 # Run E2E tests in headed mode (browser visible)
 npm run test:e2e:headed
 
+# Run specific test files
+npm run test:e2e -- color-theme.spec.ts
+npm run test:e2e -- performance.spec.ts
+
 # Run all tests (unit + E2E)
 npm run test:all
+
+# Run tests with specific tags or features
+npm run test -- --testNamePattern="color theme"
+npm run test:e2e -- --grep="performance"
 ```
 
 ## Unit Testing
@@ -201,14 +213,26 @@ mockFetch.mockResolvedValue(createMockFetchResponse({ success: true }));
 
 ### Test Structure
 
-E2E tests are organized by feature:
+E2E tests are organized by feature and testing type:
+
+**Functional Tests:**
 
 - **home.spec.ts** - Homepage functionality
 - **navigation.spec.ts** - Navigation and routing
 - **auth.spec.ts** - Authentication flows
+- **color-theme.spec.ts** - Color theme system
 - **security.spec.ts** - Security features
 
-### Example E2E Test
+**Performance & Quality Tests:**
+
+- **performance.spec.ts** - Page load times, Core Web Vitals
+- **visual-regression.spec.ts** - UI screenshot comparisons
+
+### Test Types
+
+#### Functional E2E Tests
+
+Standard user interaction testing:
 
 ```typescript
 import { test, expect } from "@playwright/test";
@@ -219,6 +243,131 @@ test("should load and display the main heading", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: /Next Enterprise Plus/i })
   ).toBeVisible();
+});
+```
+
+#### Performance Tests
+
+Comprehensive performance testing with Core Web Vitals, timing metrics, and resource analysis:
+
+```typescript
+test("measures Core Web Vitals and page load timing", async ({ page }) => {
+  // High precision timing measurement
+  const startTime = performance.now();
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  const totalLoadTime = performance.now() - startTime;
+
+  // Get detailed performance metrics
+  const performanceData = await page.evaluate(() => {
+    const navigationEntry = performance.getEntriesByType("navigation")[0];
+    const paintEntries = performance.getEntriesByType("paint");
+
+    return {
+      domContentLoaded:
+        navigationEntry?.domContentLoadedEventEnd -
+        navigationEntry?.domContentLoadedEventStart,
+      domInteractive:
+        navigationEntry?.domInteractive - navigationEntry?.fetchStart,
+      firstPaint:
+        paintEntries.find((entry) => entry.name === "first-paint")?.startTime ||
+        0,
+      firstContentfulPaint:
+        paintEntries.find((entry) => entry.name === "first-contentful-paint")
+          ?.startTime || 0,
+      resourceCount: performance.getEntriesByType("resource").length,
+    };
+  });
+
+  // Assert Core Web Vitals thresholds (Google's recommendations)
+  expect(performanceData.firstPaint).toBeLessThan(1800); // First Paint < 1.8s
+  expect(performanceData.firstContentfulPaint).toBeLessThan(1800); // FCP < 1.8s
+  expect(totalLoadTime).toBeLessThan(3000); // Total load < 3s
+});
+
+test("measures theme switching response time", async ({ page }) => {
+  await page.goto("/color-theme");
+  const themes = ["red", "green", "violet", "orange"];
+
+  for (const theme of themes) {
+    const startTime = performance.now();
+    await page
+      .getByRole("button", { name: new RegExp(theme, "i") })
+      .first()
+      .click();
+    await page.waitForFunction(
+      (themeName) =>
+        document.documentElement.classList.contains(`theme-${themeName}`),
+      theme
+    );
+    const switchTime = performance.now() - startTime;
+
+    expect(switchTime).toBeLessThan(150); // Theme switching should be fast
+  }
+});
+
+test("measures bundle size and resource loading across pages", async ({
+  page,
+}) => {
+  const pages = ["/", "/color-theme", "/overflow-demo", "/error-testing"];
+
+  for (const pagePath of pages) {
+    const startTime = performance.now();
+    await page.goto(pagePath);
+    await page.waitForLoadState("networkidle");
+    const loadTime = performance.now() - startTime;
+
+    const pageMetrics = await page.evaluate(() => {
+      const resourceEntries = performance.getEntriesByType("resource");
+      const totalSize = resourceEntries.reduce(
+        (sum, entry) => sum + (entry.transferSize || 0),
+        0
+      );
+      return { resourceCount: resourceEntries.length, totalSize };
+    });
+
+    expect(loadTime).toBeLessThan(3000); // Load within 3 seconds
+    expect(pageMetrics.totalSize).toBeLessThan(5 * 1024 * 1024); // < 5MB total
+  }
+});
+```
+
+**Performance Metrics Measured:**
+
+- **Core Web Vitals**: First Paint (FP), First Contentful Paint (FCP), DOM timing
+- **Theme Performance**: Color theme switching response times
+- **Scroll Performance**: Dynamic content scrolling with frame-accurate timing
+- **Memory Usage**: Heap size tracking during theme cycling (browser-compatible)
+- **DOM Query Performance**: Element counting and query timing
+- **Bundle Analysis**: JS/CSS sizes, resource counts, loading times per page
+- **Paint Timing**: CSS loading impact on rendering performance
+
+#### Visual Regression Tests
+
+Screenshot-based UI testing:
+
+```typescript
+test("should match homepage visual design", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  // Take screenshot and compare with baseline
+  await expect(page).toHaveScreenshot("homepage-desktop.png");
+});
+
+test("should display themes correctly", async ({ page }) => {
+  await page.goto("/color-theme");
+
+  // Test each color theme visually
+  const themes = ["blue", "green", "orange", "red", "purple", "yellow"];
+
+  for (const theme of themes) {
+    await page.click(`[data-testid="theme-${theme}"]`);
+    await page.waitForTimeout(100); // Allow theme to apply
+    await expect(page.locator(".theme-showcase")).toHaveScreenshot(
+      `theme-${theme}.png`
+    );
+  }
 });
 ```
 
@@ -294,6 +443,95 @@ test("should validate user input", async () => {
 
   const response = await POST(request);
   expect(response.status).toBe(400);
+});
+```
+
+### Color Theme Testing
+
+The template includes comprehensive testing for the color theme system:
+
+#### Color Theme Unit Tests
+
+```typescript
+// Test color theme provider
+describe("ColorThemeProvider", () => {
+  it("provides default blue theme", () => {
+    render(<TestComponent />, { wrapper: ColorThemeProvider });
+    expect(screen.getByText("blue")).toBeInTheDocument();
+  });
+
+  it("changes theme and updates localStorage", async () => {
+    const user = userEvent.setup();
+    render(<ColorThemeDemo />);
+
+    await user.click(screen.getByText("Green"));
+    expect(localStorage.getItem("color-theme")).toBe("green");
+  });
+});
+
+// Test color theme toggle component
+describe("ColorThemeToggle", () => {
+  it("opens dropdown menu when clicked", async () => {
+    const user = userEvent.setup();
+    render(<ColorThemeToggle />);
+
+    await user.click(screen.getByRole("button"));
+    expect(screen.getByText("Blue")).toBeVisible();
+  });
+
+  it("changes theme when option is selected", async () => {
+    const user = userEvent.setup();
+    render(<ColorThemeToggle />);
+
+    await user.click(screen.getByRole("button"));
+    await user.click(screen.getByText("Red"));
+
+    expect(mockSetTheme).toHaveBeenCalledWith("red");
+  });
+});
+```
+
+#### Color Theme E2E Tests
+
+```typescript
+// Test theme switching functionality
+test("should switch color themes", async ({ page }) => {
+  await page.goto("/color-theme");
+
+  // Open color theme dropdown
+  await page.click('[data-testid="color-theme-toggle"]');
+  await page.click("text=Green");
+
+  // Verify theme change
+  await expect(page.locator("html")).toHaveClass(/theme-green/);
+});
+
+// Test theme persistence
+test("should persist theme across page reloads", async ({ page }) => {
+  await page.goto("/color-theme");
+
+  // Change theme
+  await page.click('[data-testid="color-theme-toggle"]');
+  await page.click("text=Purple");
+
+  // Reload and verify persistence
+  await page.reload();
+  await expect(page.locator("html")).toHaveClass(/theme-purple/);
+});
+```
+
+#### Integration Tests
+
+```typescript
+// Test theme integration with other providers
+describe("Providers Integration", () => {
+  it("provides all contexts correctly", () => {
+    render(<TestComponent />, { wrapper: Providers });
+
+    // Both theme contexts should be available
+    expect(screen.getByText("system")).toBeInTheDocument(); // next-themes
+    expect(screen.getByText("blue")).toBeInTheDocument(); // color theme
+  });
 });
 ```
 

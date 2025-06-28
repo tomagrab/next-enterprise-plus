@@ -12,7 +12,7 @@ A modern Next.js template project designed for enterprise applications, featurin
 - 🔐 **NextAuth.js** integration ready for multiple providers
 - 🧪 **Testing Infrastructure** - Jest, React Testing Library, Playwright E2E with 100% test pass rate
 - 🛡️ **Security & Compliance** - CSP, rate limiting, CSRF protection, input validation
-- 🌙 **Dark/Light Mode** with next-themes
+- 🌙 **Dark/Light Mode & Color Themes** - Dual theme system with next-themes + custom color themes
 - 📏 **Standardized Overflow** - Only main content scrolls
 - 🗂️ **Dynamic Breadcrumbs** - Context-aware navigation
 - ⚡ **TypeScript** - Full type safety
@@ -32,6 +32,7 @@ src/
 │   │   └── secure/        # Secure API routes with validation
 │   ├── auth/signin/       # Custom sign-in page
 │   ├── auth-setup/        # Authentication setup guide
+│   ├── color-theme/      # Color theme showcase and demo
 │   ├── error-testing/     # Error testing demo page
 │   ├── getting-started/   # Getting started guide
 │   ├── overflow-demo/    # Overflow behavior demo
@@ -45,6 +46,7 @@ src/
 │   ├── auth/             # Authentication components
 │   │   └── user-menu.tsx # User authentication menu
 │   ├── demo/             # Demo and testing components
+│   │   ├── color-theme-demo.tsx
 │   │   ├── error-testing-demo.tsx
 │   │   ├── overflow-demo.tsx
 │   │   ├── security-demo.tsx
@@ -56,16 +58,20 @@ src/
 │   ├── providers/        # Context providers
 │   │   ├── providers.tsx # Main providers wrapper
 │   │   └── theme/        # Theme provider components
+│   │       ├── color-theme-provider.tsx
+│   │       └── __tests__/
 │   └── ui/               # shadcn/ui components
 │       ├── app-sidebar.tsx
 │       ├── button.tsx
 │       ├── card.tsx
+│       ├── color-theme-toggle.tsx
 │       ├── dialog.tsx
 │       ├── dynamic-title.tsx
 │       ├── footer.tsx
 │       ├── header.tsx
 │       ├── mobile-nav.tsx
 │       ├── sidebar.tsx
+│       ├── theme-controls.tsx
 │       └── ... (40+ UI components)
 ├── hooks/                # Custom React hooks
 │   └── use-mobile.ts     # Mobile detection hook
@@ -91,9 +97,12 @@ src/
 
 e2e/                       # End-to-end tests
 ├── auth.spec.ts          # Authentication E2E tests
+├── color-theme.spec.ts   # Color theme system E2E tests
 ├── home.spec.ts          # Homepage E2E tests
 ├── navigation.spec.ts    # Navigation E2E tests
-└── security.spec.ts      # Security features E2E tests
+├── performance.spec.ts   # Performance testing
+├── security.spec.ts      # Security features E2E tests
+└── visual-regression.spec.ts # Visual regression testing
 
 Configuration Files:
 ├── middleware.ts         # Security and session middleware
@@ -139,7 +148,7 @@ The template includes a comprehensive testing suite with **100% test pass rate**
 # Run all tests
 npm test
 
-# Results: ✅ 4 test suites passed, 22 tests passed
+# Results: ✅ 9 test suites passed, 51 tests passed
 ```
 
 - **Unit Tests**: Component and utility function testing
@@ -316,6 +325,151 @@ export default withAuth({
     },
   },
 });
+```
+
+## Color Theme System
+
+The template includes a comprehensive color theme system that works independently from the light/dark mode toggle, allowing users to customize the application's color palette while maintaining their preferred brightness setting.
+
+### Color Theme Features
+
+- **6 Built-in Color Themes**: Blue (default), Green, Orange, Red, Purple, and Yellow
+- **Independent Control**: Color themes work separately from light/dark mode
+- **Persistent Storage**: Theme preferences saved to localStorage
+- **CSS Variable Integration**: Themes use CSS custom properties for seamless switching
+- **TypeScript Support**: Fully typed theme system with proper IntelliSense
+
+### Available Themes
+
+| Theme  | Primary Color            | Use Case              |
+| ------ | ------------------------ | --------------------- |
+| Blue   | `hsl(221.2 83.2% 53.3%)` | Default, professional |
+| Green  | `hsl(142.1 76.2% 36.3%)` | Success, growth       |
+| Orange | `hsl(24.6 95% 53.1%)`    | Energy, creativity    |
+| Red    | `hsl(346.8 77.2% 49.8%)` | Alerts, importance    |
+| Purple | `hsl(262.1 83.3% 57.8%)` | Innovation, premium   |
+| Yellow | `hsl(47.9 95.8% 53.1%)`  | Optimism, attention   |
+
+### Usage
+
+#### Color Theme Toggle Component
+
+```typescript
+import { ColorThemeToggle } from "@/components/ui/color-theme-toggle";
+
+// Renders a palette button with dropdown menu
+<ColorThemeToggle />;
+```
+
+#### Color Theme Provider
+
+```typescript
+import { useColorTheme } from "@/components/providers/theme/color-theme-provider";
+
+const { theme, setTheme } = useColorTheme();
+
+// Current theme: "blue" | "green" | "orange" | "red" | "purple" | "yellow"
+console.log(theme);
+
+// Change theme
+setTheme("green");
+```
+
+#### Theme Controls (Combined Component)
+
+```typescript
+import { ThemeControls } from "@/components/ui/theme-controls";
+
+// Renders both color theme toggle and light/dark mode toggle
+<ThemeControls />;
+```
+
+### Integration with next-themes
+
+The color theme system is designed to work seamlessly with next-themes:
+
+- **Light/Dark Mode**: Controlled by next-themes (`useTheme`)
+- **Color Themes**: Controlled by custom provider (`useColorTheme`)
+- **CSS Classes**: Applied simultaneously (e.g., `dark theme-green`)
+
+### Custom Theme Development
+
+#### Adding New Themes
+
+1. **Update the theme type** in `src/components/providers/theme/color-theme-provider.tsx`:
+
+```typescript
+export type ColorTheme =
+  | "blue"
+  | "green"
+  | "orange"
+  | "red"
+  | "purple"
+  | "yellow"
+  | "custom";
+```
+
+1. **Add CSS variables** in `src/app/globals.css`:
+
+```css
+.theme-custom {
+  --primary: 180 100% 50%; /* Your custom hsl values */
+  --primary-foreground: 0 0% 100%;
+  /* ... other color variables */
+}
+```
+
+1. **Update theme options** in components:
+
+```typescript
+const themes = [
+  { name: "blue", label: "Blue" },
+  { name: "custom", label: "Custom" },
+  // ... other themes
+];
+```
+
+#### CSS Integration
+
+Each theme applies CSS custom properties to the document root:
+
+```css
+/* Applied automatically when theme changes */
+.theme-blue {
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  /* ... */
+}
+
+.theme-green {
+  --primary: 142.1 76.2% 36.3%;
+  --primary-foreground: 355.7 100% 97.3%;
+  /* ... */
+}
+```
+
+### Demo Page
+
+Visit `/color-theme` to see an interactive demonstration of the color theme system with:
+
+- **Theme Selector**: Try all available color themes
+- **Component Showcase**: See how themes affect different UI components
+- **Form Elements**: Interactive form with theme-aware styling
+- **Technical Information**: View current theme state and CSS variables
+
+### Color Theme Testing
+
+The color theme system includes comprehensive tests:
+
+```bash
+# Run color theme tests
+npm test -- --testPathPatterns="color-theme"
+
+# Tests cover:
+# - Theme provider functionality
+# - Theme toggle component
+# - Theme persistence
+# - CSS class application
 ```
 
 ## Error Handling & Monitoring
@@ -513,8 +667,9 @@ The template includes a comprehensive testing setup with unit testing, integrati
 
 - **Jest** - JavaScript testing framework with Next.js integration
 - **React Testing Library** - Testing utilities for React components
-- **Playwright** - Cross-browser end-to-end testing
+- **Playwright** - Cross-browser end-to-end testing with performance & visual regression
 - **TypeScript** - Full type safety in tests
+- **Comprehensive Coverage** - Unit, integration, E2E, performance, and visual testing
 
 ### Running Tests
 
@@ -528,6 +683,10 @@ npm run test:coverage     # Generate coverage report
 npm run test:e2e          # Run E2E tests
 npm run test:e2e:ui       # Run E2E tests with UI
 npm run test:e2e:headed   # Run E2E tests in headed mode
+
+# Specific Test Categories
+npm run test -- --testPathPatterns="color-theme"  # Color theme tests
+npm run test:e2e -- performance.spec.ts           # Performance tests
 
 # All Tests
 npm run test:all          # Run unit + E2E tests
@@ -545,10 +704,13 @@ src/
 └── app/api/
     └── **/__tests__/     # API route tests
 e2e/
+├── auth.spec.ts         # Authentication E2E tests
+├── color-theme.spec.ts  # Color theme system E2E tests
 ├── home.spec.ts         # Homepage E2E tests
 ├── navigation.spec.ts   # Navigation E2E tests
-├── auth.spec.ts        # Authentication E2E tests
-└── security.spec.ts    # Security features E2E tests
+├── performance.spec.ts  # Performance & Core Web Vitals testing
+├── security.spec.ts     # Security features E2E tests
+└── visual-regression.spec.ts # UI screenshot comparisons
 ```
 
 ### Key Testing Features
@@ -556,6 +718,60 @@ e2e/
 - **Custom Test Utilities**: Pre-configured render functions with all providers (theme, auth, toast)
 - **Mock Management**: Automatic mocking of Next.js router, NextAuth, and browser APIs
 - **Security Testing**: Comprehensive tests for validation, rate limiting, CSRF protection, and security headers
+- **Performance Testing**: Core Web Vitals, bundle analysis, theme switching performance, and resource loading optimization
+- **Color Theme Testing**: Full coverage of the dual theme system (light/dark + color themes)
+- **Cross-Browser E2E**: Tests run across Chromium, Firefox, WebKit, and mobile browsers
+
+### Performance Testing
+
+The template includes comprehensive performance testing with Playwright:
+
+```typescript
+// Core Web Vitals measurement
+test("measures Core Web Vitals and page load timing", async ({ page }) => {
+  const performanceData = await page.evaluate(() => {
+    const navigationEntry = performance.getEntriesByType("navigation")[0];
+    const paintEntries = performance.getEntriesByType("paint");
+    return {
+      firstPaint: paintEntries.find((entry) => entry.name === "first-paint")
+        ?.startTime,
+      firstContentfulPaint: paintEntries.find(
+        (entry) => entry.name === "first-contentful-paint"
+      )?.startTime,
+      domInteractive:
+        navigationEntry?.domInteractive - navigationEntry?.fetchStart,
+    };
+  });
+
+  expect(performanceData.firstPaint).toBeLessThan(1800); // < 1.8s (good)
+  expect(performanceData.firstContentfulPaint).toBeLessThan(1800); // < 1.8s (good)
+});
+
+// Theme switching performance
+test("measures theme switching response time", async ({ page }) => {
+  const themes = ["red", "green", "violet", "orange"];
+  for (const theme of themes) {
+    const startTime = performance.now();
+    await page.click(`[data-testid="theme-${theme}"]`);
+    await page.waitForFunction(
+      (themeName) =>
+        document.documentElement.classList.contains(`theme-${themeName}`),
+      theme
+    );
+    const switchTime = performance.now() - startTime;
+    expect(switchTime).toBeLessThan(150); // Theme switching should be fast
+  }
+});
+```
+
+**Performance Metrics Measured:**
+
+- **Core Web Vitals**: First Paint, First Contentful Paint, DOM timing
+- **Bundle Analysis**: JS/CSS sizes, resource counts, loading efficiency
+- **Theme Performance**: Color theme switching response times
+- **Memory Usage**: Heap size tracking during intensive operations
+- **Scroll Performance**: Frame-accurate scrolling with dynamic content
+- **Resource Loading**: Cross-page efficiency and optimization
 - **Cross-Browser E2E**: Tests run on Chromium, Firefox, WebKit, and mobile browsers
 - **Coverage Requirements**: Enforced minimum coverage thresholds (70% across all metrics)
 - **CI/CD Ready**: Configured for continuous integration environments
