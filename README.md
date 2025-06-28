@@ -661,7 +661,7 @@ src/lib/security/
 └── csrf.ts           # CSRF protection implementation
 ```
 
-## API Integration {#api-integration}
+## API Integration
 
 ### Architecture Philosophy
 
